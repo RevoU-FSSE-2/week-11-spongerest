@@ -29,5 +29,5 @@
 
 
 
-![alt text](/backend/assets/Flowchart%20Diagram.jpg)
+![alt text](/assets/Flowchart%20Diagram.jpg)
 
