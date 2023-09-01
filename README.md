@@ -6,6 +6,8 @@
 
 ## Custom API Untuk Web Aplikasi
 
+### Swagger http://localhost:5000/api-docs
+
 1. ### Register
     #### http://localhost:5000/auth/register
 
