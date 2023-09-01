@@ -29,5 +29,5 @@
 
 
 
-![alt text](/assets/Flowchart%20Diagram.jpg)
+![alt text](/assets/jadi2.jpg)
 
