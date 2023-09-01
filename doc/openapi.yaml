@@ -1,0 +1,269 @@
+openapi: '3.0.3'
+info:
+  title: 'Add Book Request Management API'
+  version: '1.0.0'
+  description: 'API for managing add book requests'
+servers:
+  - url: 'http://localhost:5000'
+    description: 'Local server'
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'Enter the token with the word Bearer and a space before it e.g. Bearer xxxxxxxx' 
+  schemas:
+    UserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          pattern: '^[^\s]+$' 
+          example: 'user'
+        role:
+          type: string
+          enum: 
+            - 'user'
+            - 'approver'
+            - 'admin'
+        password:
+          type: string
+          minLength: 8 
+          pattern: '^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$' 
+      required:
+        - username
+        - role
+        - password
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        role:
+          type: string
+          enum:
+            - 'admin'
+            - 'maker'
+            - 'approver'
+        message: 
+          type: string
+    UserLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          pattern: '^[^\s]+$'
+          example: 'username'
+        password:
+          type: string
+          format: password
+          minLength: 8
+      required:
+        - username
+        - password
+    AddRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        price:
+          type: number
+          format: float
+        sourceAccount:
+          type: string
+    AllAddResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddRequest'
+    AddRequestStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - 'approved'
+            - 'rejected'
+      required:
+        - status
+paths:
+  /auth/register:
+    post:
+      tags:
+        - 'User'
+      summary: 'Register a new user'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: 'User created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: 'Invalid request'
+        '409':
+          description: 'User already exists'
+  /auth/login:
+    post:
+      tags:
+        - 'User'
+      summary: 'Login'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: 'User logged in'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: 'Invalid request'
+  /add:
+    get:
+      security:
+        - bearer: []
+      tags:
+        - 'Add Request'
+      summary: 'Get all add requests'
+      responses:
+        '200':
+          description: 'Add requests retrieved'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AllAddResponse'
+        '401':
+          description: 'Unauthorized'
+    post:
+      security:
+        - bearer: []
+      tags:
+        - 'Add Request'
+      summary: 'Create a new add request'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRequest'
+      responses:
+        '201':
+          description: 'Add request created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddRequest'
+        '400':
+          description: 'Invalid request'
+        '401':
+          description: 'Unauthorized'
+  /add/{id}:
+    patch:
+      security:
+        - bearer: []
+      tags:
+        - 'Add Request'
+      summary: 'Update a add request'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: 'Add request id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRequestStatusUpdate'
+      responses:
+        '200':
+          description: 'Add request updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddRequest'
+        '400':
+          description: 'Invalid request'
+        '401':
+          description: 'Unauthorized'
+    delete:
+      security:
+        - bearer: []
+      tags:
+        - 'Add Request'
+      summary: 'Delete a add request'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: 'Add request id'
+      responses:
+        '204':
+          description: 'Add request deleted'
+        '400':
+          description: 'Invalid request'
+        '401':
+          description: 'Unauthorized'
+  /add/history:
+    get:
+      security:
+        - bearer: []
+      tags:
+        - 'Add Request'
+      summary: 'Get all add requests'
+      parameters:
+        - in: query
+          name: startDate 
+          schema:
+            type: string
+            format: date
+          required: false
+          description: 'Filter by created date'
+        - in: query
+          name: endDate 
+          schema:
+            type: string
+            format: date
+          required: false
+          description: 'Filter by created date'
+        - in: query
+          name: statuses
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - 'pending'
+                - 'approved'
+                - 'rejected'
+          required: false
+          description: 'Filter by statuses'
+      responses:
+        '200':
+          description: 'Add requests retrieved'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AllAddResponse'
+        '401':
+          description: 'Unauthorized'       
